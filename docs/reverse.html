@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>ReverseString</title>
+<script>
+
+document.addEventListener( 'DOMContentLoaded', () => {
+	const input = document.getElementById( 'input' );
+	const result = document.getElementById( 'result' );
+
+	// ここで指定する数値はページ数で、1ページあたり64KB固定。
+	//const memory = new WebAssembly.Memory( { initial:10, maximum:100 } );
+	WebAssembly.instantiateStreaming( fetch( './reverse.wasm' ), {} ).then( ( wasm ) => {
+		// 文字列の変換器を用意しておく
+		const encoder = new TextEncoder();
+		const decoder = new TextDecoder();
+
+		console.log( wasm );
+		// WebAssemblyの反転関数を取り出す
+		const reverse = wasm.instance.exports.reverse;
+		// WebAssemblyのメモリ領域を取り出す
+		const memory = wasm.instance.exports.memory;
+
+		// メモリ領域を見る。この時点だとサイズが0
+		console.log( wasm.instance.exports.memory.buffer );
+		// メモリ領域を1ページ広げる
+		memory.grow( 1 );
+		// 1ページ広げたのでサイズが64*1024=65536になっている
+		console.log( wasm.instance.exports.memory.buffer );
+		const mem = new Uint8Array( memory.buffer );
+
+		input.addEventListener( 'keyup', () => {
+			// 元の文字列
+			console.log( input.value );
+			// 文字列をバイト列にしてWebAssemblyのメモリ領域に書き込む
+			const encodedString = encoder.encode( input.value );
+			mem.set( encodedString );
+			// WebAssembly側に何バイト分の文字があるか渡す
+			const size = encodedString.length;
+			reverse( size );
+			// 再度WebAssemblyのメモリ領域を読み込み、文字列に変換する
+			result.value = decoder.decode( new Uint8Array( memory.buffer, 0, size ) );
+		} );
+
+	} ).catch( ( error ) => { console.log( error ); } );
+} );
+</script>
+<style>
+div { width: 80%; margin: auto 1rem; }
+input { width: 6rem; }
+</style>
+</head>
+<body>
+	<div>
+		<input id="input" />
+		<input id="result" readonly />
+	</div>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>WasmXorshift</title>
+<script>
+const xos = {
+	seed: () => {},
+	nextInt: () => { return 0; },
+	next: () => { return 0; }
+};
+
+class Xorshift {
+	constructor( x = 0, y = 0, z = 0, w = 0 ) { this.seed( x, y, z, w ); }
+
+	seed( x = 0, y = 0, z = 0, w = 0 ) {
+		if ( !x && !y && !z && !w ) {
+			x = 123456789;
+			y = 362436069;
+			z = 521288629;
+			w = 88675123;
+		}
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.w = w;
+	}
+
+	nextInt() {
+		// JSのビット演算子は符号付き32bitで行われるため、普通に実装するとCやWebAssemblyと結果が異なる。
+		// 具体的には符号付きなので一定以上の値は符号が反転してその後の計算が合わなくなる。
+		// 元の数値（符号関係なし）→ビット演算→値の解釈が符号ありになり中のビットが0ではなく1になる
+		// ただし >>> は符号なしビット演算になるので、ビット演算のたびに >>> 0 で符号なしの状態にする。
+		const t = ( this.x ^ ( this.x << 11 ) ) >>> 0;
+		this.x = this.y;
+		this.y = this.z;
+		this.z = this.w;
+		this.w = ( this.w ^ ( ( this.w >>> 19 ) >>> 0 ) ^ ( ( t ^ ( ( t >>> 8 ) >>> 0 ) ) >>> 0 ) ) >>> 0;
+		return this.w;
+	}
+
+	next() {
+		return this.nextInt() / 0xffffffff;
+	}
+}
+
+WebAssembly.instantiateStreaming( fetch( './xorshift.wasm' ), {/* imports: { log: arg => console.log(arg) } */} ).then( ( wasm ) => {
+	console.log( wasm );
+	// wasm.instance.exports: { seed( a: number = 0, b: number = 0, c: number = 0, d: number = 0 ): void, nextInt(): number, next(): number, X: 123456789, Y: 362436069, Z: 521288629, W: 88675123 }
+	xos.seed = wasm.instance.exports.seed;
+	xos.nextInt = wasm.instance.exports.nextInt;
+	xos.next = wasm.instance.exports.next;
+} ).catch( ( error ) => { console.log( error ); } );
+
+function e( id ) { return document.getElementById( id ); }
+function c( id, callback ) { e( id ).addEventListener( 'click', callback ); }
+function n( i ) { return ( parseInt( i.value ) || 0 ); }
+
+document.addEventListener( 'DOMContentLoaded', () => {
+	const jsxos = new Xorshift();
+	let rand = xos;
+
+	const mode = e( 'mode' );
+	function change() {
+		rand = mode.options[ mode.selectedIndex ].value === 'JS' ? jsxos : xos;
+	}
+	mode.addEventListener( 'change', change );
+	change();
+
+	const seeds = [ e( 'seed0' ), e( 'seed1' ), e( 'seed2' ), e( 'seed3' ) ];
+	const result = e( 'result' );
+	const log = e( 'log' );
+
+	c( 'reset', () => {
+		log.result = '';
+		log.value = '';
+		rand.seed( n( seeds[ 0 ] ), n( seeds[ 1 ] ), n( seeds[ 2 ] ), n( seeds[ 3 ] )  );
+	} );
+
+	c( 'next', () => {
+		const value = '0x' + rand.nextInt().toString( 16 );
+		result.value = value;
+		log.value = result.value + '\n' + log.value;
+	} );
+} );
+</script>
+<style>
+div { width: 80%; margin: auto 1rem; }
+input { width: 6rem; }
+textarea { box-sizing: border-box; width: 100%; height: 10rem; }
+</style>
+</head>
+<body>
+	<div>
+		<select id="mode">
+			<option value="WebAssembly">WebAssembly</option>
+			<option value="JS">JS</option>
+		</select>
+		<input type="text" id="result" readonly>
+		<button id="next">Next</button>
+	</div>
+	<div>
+		<input type="number" id="seed0" value="0">
+		<input type="number" id="seed1" value="0">
+		<input type="number" id="seed2" value="0">
+		<input type="number" id="seed3" value="0">
+		<button id="reset">Reset</button>
+	</div>
+	<div>
+		JS
+		<textarea id="log"></textarea>
+		C
+		<textarea readonly>0x17906569
+0x837ad58
+0x2ac00f2c
+0x9af81443
+0x8db24146
+0x1ec7825e
+0xd88d00b0
+0x951049aa
+0x1b5116e6
+0xdca345ea</textarea>
+	</div>
+</body>
+</html>

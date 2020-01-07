@@ -1,0 +1,23 @@
+{
+  "name": "wasisample",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build:wasm": "asc --runtime none -o docs/xorshift.wasm xorshift/xorshift.ts",
+    "build:wast": "asc --runtime none -o xorshift/xorshift.wast xorshift/xorshift.ts",
+    "build:wat": "asc --runtime none -o xorshift/xorshift.wat xorshift/xorshift.ts",
+    "start:old": "node --expose-wasm node/xorshift_old.js",
+    "start:mod": "node --experimental-wasm-modules node/xorshift.js",
+    "start:exec": "node --experimental-wasm-modules node/index.js",
+    "build:string": "asc --runtime none -o docs/reverse.wasm string/reverse.ts",
+    "build:string_t": "asc --runtime none -o string/reverse.wat string/reverse.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "assemblyscript": "^0.8.1"
+  }
+}
