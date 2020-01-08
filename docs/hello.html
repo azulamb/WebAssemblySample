@@ -20,7 +20,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	//WebAssembly.instantiateStreaming( fetch( './hello.wasm' ), {} ).then( ( wasm ) => {
 	WebAssembly.instantiateStreaming( fetch( './hello.wasm' ), importObject ).then( ( wasm ) => {
 		console.log( wasm );
-		wasm.exports._start();
+		wasm.instance.exports._start();
 	} ).catch( ( error ) => { console.log( error ); } );
 } );
 </script>
