@@ -4,14 +4,29 @@
 <meta charset="utf-8">
 <title>Hello, World!(WASI)</title>
 <script>
+function LoadIOVec( memory, iovs, iovs_len ) {
+	const data = new Uint32Array( memory.buffer, iovs, iovs_len * 2 )
+	console.log( data );
+	const iovecs = [];
+	for ( let i = 0 ; i < data.length ; i += 2 ) {
+		iovecs.push( {
+			buf: data[ i ],
+			buf_len: data[ i + 1 ],
+		} );
+	}
+	console.log( iovecs );
+	return iovecs;
+}
 
 document.addEventListener( 'DOMContentLoaded', () => {
 	const result = document.getElementById( 'result' );
 
+	let memory;
 	const importObject = {
 		wasi_unstable: {
 			fd_write: ( fd, iovs, iovs_len, nwritten ) => {
-				console.log( fd, iovs, iovs_len, nwritten );
+				console.info( fd, iovs, iovs_len, nwritten );
+				LoadIOVec( memory, iovs, iovs_len );
 				return 0;
 			},
 		},
@@ -20,7 +35,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	//WebAssembly.instantiateStreaming( fetch( './hello.wasm' ), {} ).then( ( wasm ) => {
 	WebAssembly.instantiateStreaming( fetch( './hello.wasm' ), importObject ).then( ( wasm ) => {
 		console.log( wasm );
-		importObject.wasi_unstable.fd_write = () => { console.log( 'test' ); return 0; };
+		memory = wasm.instance.exports.memory;
 		wasm.instance.exports._start();
 	} ).catch( ( error ) => { console.log( error ); } );
 } );
