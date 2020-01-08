@@ -6,7 +6,7 @@
 <script>
 function LoadIOVec( memory, iovs, iovs_len ) {
 	const data = new Uint32Array( memory.buffer, iovs, iovs_len * 2 );
-	console.log( data );
+
 	const iovecs = [];
 	for ( let i = 0 ; i < data.length ; i += 2 ) {
 		iovecs.push( {
@@ -14,7 +14,7 @@ function LoadIOVec( memory, iovs, iovs_len ) {
 			buf_len: data[ i + 1 ],
 		} );
 	}
-	console.log( iovecs );
+
 	return iovecs;
 }
 
@@ -31,9 +31,13 @@ function LoadOIBuffer( memory, iovecs ) {
 	return buffer;
 }
 
-function LoadString( memory, iovs, iovs_len ) {
-	const buffer = LoadOIBuffer( memory, LoadIOVec( memory, iovs, iovs_len ) );
-	return new TextDecoder().decode( buffer ) 
+function NumberToUInt32Array( num ) {
+	const data = new Uint32Array( [ 0, 0, 0, 0 ] );
+	for ( let i = 0 ; i < 4 ; ++i ) {
+		data[ i ] = num & 0xFF;
+		num >>= 8;
+	}
+	return data;
 }
 
 document.addEventListener( 'DOMContentLoaded', () => {
@@ -44,12 +48,18 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		wasi_unstable: {
 			fd_write: ( fd, iovs, iovs_len, nwritten ) => {
 				console.info( fd, iovs, iovs_len, nwritten );
+				const buffer = LoadOIBuffer( memory, LoadIOVec( memory, iovs, iovs_len ) );
+				const str = new TextDecoder().decode( buffer );
 				if ( fd === 1 ) {
-					console.log( LoadString( memory, iovs, iovs_len ) );
+					console.log( str );
 				} else if ( fd === 2 ) {
-					console.error( LoadString( memory, iovs, iovs_len ) );
+					console.error( str );
 				}
-				return 0;
+				const size = buffer.length;
+				new Uint8Array( memory.buffer ).set( NumberToUInt32Array( size ), nwritten );
+
+				result.value = str;
+				return size;
 			},
 		},
 	};
