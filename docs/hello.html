@@ -16,10 +16,11 @@ document.addEventListener( 'DOMContentLoaded', () => {
 			},
 		},
 	};
-	// ypeError: WebAssembly.instantiate(): Import #0 module="wasi_unstable" error: module is not an object or function
+	// TypeError: WebAssembly.instantiate(): Import #0 module="wasi_unstable" error: module is not an object or function
 	//WebAssembly.instantiateStreaming( fetch( './hello.wasm' ), {} ).then( ( wasm ) => {
 	WebAssembly.instantiateStreaming( fetch( './hello.wasm' ), importObject ).then( ( wasm ) => {
-
+		console.log( wasm );
+		wasm.exports._start();
 	} ).catch( ( error ) => { console.log( error ); } );
 } );
 </script>
