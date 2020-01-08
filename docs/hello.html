@@ -18,7 +18,8 @@ function LoadIOVec( memory, iovs, iovs_len ) {
 	return iovecs;
 }
 
-function LoadOIBuffer( memory, iovecs ) {
+function LoadIOBuffer( memory, iovs, iovs_len ) {
+	const iovecs = LoadIOVec( memory, iovs, iovs_len )
 	const size = iovecs.reduce( ( prev, value ) => { return prev + value.buf_len }, 0 );
 	const buffer = new Uint8Array( size );
 
@@ -48,13 +49,14 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		wasi_unstable: {
 			fd_write: ( fd, iovs, iovs_len, nwritten ) => {
 				console.info( fd, iovs, iovs_len, nwritten );
-				const buffer = LoadOIBuffer( memory, LoadIOVec( memory, iovs, iovs_len ) );
+				const buffer = LoadIOBuffer( memory, iovs, iovs_len );
 				const str = new TextDecoder().decode( buffer );
 				if ( fd === 1 ) {
 					console.log( str );
 				} else if ( fd === 2 ) {
 					console.error( str );
 				}
+
 				const size = buffer.length;
 				new Uint8Array( memory.buffer ).set( NumberToUInt32Array( size ), nwritten );
 
