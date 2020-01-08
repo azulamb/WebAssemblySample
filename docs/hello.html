@@ -10,8 +10,8 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
 	const importObject = {
 		wasi_unstable: {
-			fd_write: ( a, b, c, d, e ) => {
-				console.log( a, b, c, d, e );
+			fd_write: ( fd, iovs, iovs_len, nwritten ) => {
+				console.log( fd, iovs, iovs_len, nwritten );
 				return 0;
 			},
 		},
@@ -20,6 +20,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	//WebAssembly.instantiateStreaming( fetch( './hello.wasm' ), {} ).then( ( wasm ) => {
 	WebAssembly.instantiateStreaming( fetch( './hello.wasm' ), importObject ).then( ( wasm ) => {
 		console.log( wasm );
+		importObject.wasi_unstable.fd_write = () => { console.log( 'test' ); return 0; };
 		wasm.instance.exports._start();
 	} ).catch( ( error ) => { console.log( error ); } );
 } );
