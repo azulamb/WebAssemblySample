@@ -8,7 +8,17 @@
 document.addEventListener( 'DOMContentLoaded', () => {
 	const result = document.getElementById( 'result' );
 
-	WebAssembly.instantiateStreaming( fetch( './hello.wasm' ), {} ).then( ( wasm ) => {
+	const importObject = {
+		wasi_unstable: {
+			fd_write: ( a, b, c, d, e ) => {
+				console.log( a, b, c, d, e );
+				return 0;
+			},
+		},
+	};
+	// ypeError: WebAssembly.instantiate(): Import #0 module="wasi_unstable" error: module is not an object or function
+	//WebAssembly.instantiateStreaming( fetch( './hello.wasm' ), {} ).then( ( wasm ) => {
+	WebAssembly.instantiateStreaming( fetch( './hello.wasm' ), importObject ).then( ( wasm ) => {
 
 	} ).catch( ( error ) => { console.log( error ); } );
 } );
