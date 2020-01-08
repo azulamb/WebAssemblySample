@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Hello, World!(WASI)</title>
+<script>
+
+document.addEventListener( 'DOMContentLoaded', () => {
+	const result = document.getElementById( 'result' );
+
+	WebAssembly.instantiateStreaming( fetch( './hello.wasm' ), {} ).then( ( wasm ) => {
+
+	} ).catch( ( error ) => { console.log( error ); } );
+} );
+</script>
+<style>
+</style>
+</head>
+<body>
+	<div>
+		<input id="result" readonly />
+	</div>
+</body>
+</html>
