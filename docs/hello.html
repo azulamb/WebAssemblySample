@@ -5,7 +5,7 @@
 <title>Hello, World!(WASI)</title>
 <script>
 function LoadIOVec( memory, iovs, iovs_len ) {
-	const data = new Uint32Array( memory.buffer, iovs, iovs_len * 2 )
+	const data = new Uint32Array( memory.buffer, iovs, iovs_len * 2 );
 	console.log( data );
 	const iovecs = [];
 	for ( let i = 0 ; i < data.length ; i += 2 ) {
@@ -18,6 +18,19 @@ function LoadIOVec( memory, iovs, iovs_len ) {
 	return iovecs;
 }
 
+function LoadOIBuffer( memory, iovecs ) {
+	const size = iovecs.reducer( ( prev, value ) => { return prev + value.buf_len }, 0 );
+	const buffer = new Uint8Array( size );
+
+	let pos = 0;
+	for ( let iovec of iovecs ) {
+		const data = new Uint8Array( memory.buffer, iovec.buf, iovec.buf_len );
+		buffer.set( data, pos );
+	}
+
+	return buffer;
+}
+
 document.addEventListener( 'DOMContentLoaded', () => {
 	const result = document.getElementById( 'result' );
 
@@ -26,7 +39,8 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		wasi_unstable: {
 			fd_write: ( fd, iovs, iovs_len, nwritten ) => {
 				console.info( fd, iovs, iovs_len, nwritten );
-				LoadIOVec( memory, iovs, iovs_len );
+				const buffer = LoadOIBuffer( memory, LoadIOVec( memory, iovs, iovs_len ) );
+				console.log( decoder.decode( buffer ) );
 				return 0;
 			},
 		},
