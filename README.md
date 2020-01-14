@@ -221,3 +221,36 @@ Address    | Memory      | Value
 
 Wasmtimeでの実行の場合は `_start` 関数が必要だが、他にも今回はメモリにデータを入れている。
 文字列反転の時同様ホスト側でメモリにいい感じにアクセスして組み立てているようなので、今回であれば `memory` も外に出しておかないと出力がなくなるので注意。
+
+## 資料
+
+* MDN - WebAssembly の概要
+  * https://developer.mozilla.org/ja/docs/WebAssembly/Concepts
+* MDN - WebAssembly.compile()
+  * https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly/compile
+* MDN - WebAssembly.instantiate()
+  * https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly/instantiate
+* MDN - WebAssembly.instantiateStreaming()
+  * https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly/instantiateStreaming
+* MDN - WebAssembly テキストフォーマットを理解する
+  * https://developer.mozilla.org/ja/docs/WebAssembly/Understanding_the_text_format
+* MDN - WebAssembly JavaScript API を使用する
+  * https://developer.mozilla.org/ja/docs/WebAssembly/Using_the_JavaScript_API
+* Node.js v13.5.0 Documentation - WebAssembly System Interface (WASI)
+  * https://nodejs.org/api/wasi.html
+* WEBASSEMBLYMAN - WebAssembly WAT Hello World
+  * https://www.webassemblyman.com/webassembly_wat_hello_world.html
+* GitHub bytecodealliance/wasmtime - WASI Core API
+  * https://github.com/bytecodealliance/wasmtime/blob/master/docs/WASI-api.md
+* GitHub - Mozilla Hacks
+  * https://inzkyk.github.io/mozilla_hacks/wasi/
+* fastly - Terrarium
+  * https://wasm.fastlylabs.com/
+* Qiita - Node.js / Denoで始める手書きWebAssembly
+  * https://qiita.com/syumai/items/b0925e63ba2cf2fd5f2b
+* Qiita - 2019年のWebAssembly事情
+  * https://qiita.com/bellbind/items/2619f8b71c3a69cc28be
+* Qiita - Node.js でつくる WASMコンパイラー - Extra1：WASIを使ってWASMを動かす
+  * https://qiita.com/massie_g/items/f63e711c695cec3d5950
+* SlideShare - Build Node.js-WASM/WASI Tiny compiler with Node.js
+  * https://www.slideshare.net/mganeko/build-nodejswasmwasi-tiny-compiler-with-nodejs

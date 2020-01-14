@@ -13,6 +13,7 @@
     "start:exec": "node --experimental-wasm-modules node/index.js",
     "build:string": "asc --runtime none -o docs/reverse.wasm string/reverse.ts",
     "build:string_t": "asc --runtime none -o string/reverse.wat string/reverse.ts",
+    "build:array": "asc --runtime none -o docs/array.wasm array/array.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

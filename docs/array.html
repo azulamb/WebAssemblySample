@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Array sum</title>
+<script>
+function Write( sample, time, result ) {
+	document.getElementById( 'time_' + sample ).value = time + '';
+	document.getElementById( 'result_' + sample ).value = result + '';
+}
+function Sample0( arr ) {
+	let sum = 0;
+	const begin = performance.now();
+	for ( let i = 0 ; i < arr.length ; ++i ) {
+		const value = arr[ i ];
+		sum += value;
+	}
+	const end = performance.now();
+	Write( 0, end - begin, sum );
+}
+function Sample1( arr ) {
+	let sum = 0;
+	const begin = performance.now();
+	// 最大値の出どころを海先されていると困るので直指定
+	for ( let i = 0 ; i < 65536000 ; ++i ) {
+		const value = arr[ i ];
+		sum += value;
+	}
+	const end = performance.now();
+	Write( 1, end - begin, sum );
+}
+async function Sample2( arr, mod ) {
+	const wasm = await new WebAssembly.instantiate( mod, {} );
+	console.log(wasm);
+	// メモリ転送も含む
+	const begin = performance.now();
+	const memory = wasm.exports.memory;
+	memory.grow( 1000 * 4 ); // 1データ4バイトにするので4倍のページ数が必要
+	const mem = new Uint32Array( memory.buffer );
+	mem.set( arr );
+	const sum = wasm.exports.sum( arr.length );
+	const end = performance.now();
+	Write( 2, end - begin, sum );
+}
+async function Sample3( arr, mod ) {
+	const wasm = await new WebAssembly.instantiate( mod, {} );
+	const memory = wasm.exports.memory;
+	memory.grow( 1000 * 4 );
+	const mem = new Uint32Array( memory.buffer );
+	mem.set( arr );
+	// メモリ転送を含まない純粋な計算
+	const begin = performance.now();
+	const sum = wasm.exports.sum( arr.length ); // i32で演算する
+	const end = performance.now();
+	Write( 3, end - begin, sum );
+}
+
+function Log( logarea, max ) {
+	const values = [];
+	for ( let i = 0 ; i < max ; ++i ) {
+		values.push( document.getElementById( 'time_' + i ).value );
+	}
+	logarea.value += values.join( ',' ) + '\n';
+}
+
+document.addEventListener( 'DOMContentLoaded', () => {
+	// 準備
+	const arr = new Array();
+	// 64 / 1024 がWebAssemblyのi8の1ページなので、1000ページ分
+	for ( let i = 0 ; i < 65536000 ; ++i ) {
+		// 0 ～ 99の整数を詰める
+		arr.push( ( Math.random() * 100 ) | 0 );
+	}
+
+	document.getElementById( 'reload' ).addEventListener( 'click', () => { location.reload(); } );
+
+	// 今回は別のインスタンスで実行したいので丁寧に準備する。
+	fetch( './array.wasm' ).then( ( response ) => {
+		return response.arrayBuffer();
+	} ).then( ( bytes ) => {
+		return WebAssembly.compile( bytes );
+	} ).then( ( mod ) => {
+		const calc = async () => {
+			// サンプル実行
+			Sample0( arr );
+			Sample1( arr );
+			await Sample2( arr, mod );
+			await Sample3( arr, mod );
+
+			Log( document.getElementById( 'log' ), 4 );
+		};
+		calc();
+		document.getElementById( 'restart' ).addEventListener( 'click', calc );
+	} );
+} );
+</script>
+<style>
+h3{font-size:1rem;margin:0;}
+.contents > div {display:grid;grid-template-rows:1fr;grid-template-columns:7rem 1fr 2rem 1fr;}
+</style>
+</head>
+<body>
+	<div class="contents">
+		<div>
+			<h3>length</h3>
+			<input id="time_0" readonly />
+			<span>ms</span>
+			<input id="result_0" readonly />	
+		</div>
+		<div>
+			<h3>static</h3>
+			<input id="time_1" readonly />
+			<span>ms</span>
+			<input id="result_1" readonly />
+		</div>
+		<div>
+			<h3>wasm</h3>
+			<input id="time_2" readonly />
+			<span>ms</span>
+			<input id="result_2" readonly />
+		</div>
+		<div>
+			<h3>wasm(calc)</h3>
+			<input id="time_3" readonly />
+			<span>ms</span>
+			<input id="result_3" readonly />
+		</div>
+		<button id="restart">Restart</button>
+		<button id="reload">Reload</button>
+		<textarea id="log"></textarea>
+	</div>
+</body>
+</html>
