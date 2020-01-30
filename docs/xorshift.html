@@ -85,9 +85,10 @@ document.addEventListener( 'DOMContentLoaded', () => {
 } );
 </script>
 <style>
-div { width: 80%; margin: auto 1rem; }
+div { width: 80%; margin: 1rem auto; }
 input { width: 6rem; }
-textarea { box-sizing: border-box; width: 100%; height: 10rem; }
+textarea { box-sizing: border-box; width: 100%; height: 25rem; font-size: 3rem; }
+.result { display: flex; }
 </style>
 </head>
 <body>
@@ -106,10 +107,8 @@ textarea { box-sizing: border-box; width: 100%; height: 10rem; }
 		<input type="number" id="seed3" value="0">
 		<button id="reset">Reset</button>
 	</div>
-	<div>
-		JS
+	<div class="result">
 		<textarea id="log"></textarea>
-		C
 		<textarea readonly>0x17906569
 0x837ad58
 0x2ac00f2c
