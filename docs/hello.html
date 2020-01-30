@@ -60,7 +60,9 @@ document.addEventListener( 'DOMContentLoaded', () => {
 				const size = buffer.length;
 				new Uint8Array( memory.buffer ).set( NumberToUInt32Array( size ), nwritten );
 
+				// 今回は出力をHTMLに書き込む。こういうことができる。
 				result.value = str;
+
 				return size;
 			},
 		},

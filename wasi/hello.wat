@@ -1,9 +1,10 @@
 (module
  ;; WASIの fd_write を使って標準出力に文字列を出力する
+ ;; JSならimportObjectに{ wasi_unstable: { fd_write: () => {} } } みたいなのを渡すことになる
  (import "wasi_unstable" "fd_write" (func $__wasi_fd_write (param i32 i32 i32 i32) (result i32)))
  ;; メイン処理の関数
  (func $_start
-  ;; データをスタックに積んでいく
+  ;; 引数をスタックに積んでいく
   i32.const 1 ;; どこに出力するか。標準出力はfd=1なので1を指定
   i32.const 0 ;; 文字列情報の構造体のポインタ。今回は0の位置に設置している
   i32.const 1 ;; 文字列のセット数。今回は1つなので1
