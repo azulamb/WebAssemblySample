@@ -27,6 +27,7 @@ function LoadIOBuffer( memory, iovs, iovs_len ) {
 	for ( let iovec of iovecs ) {
 		const data = new Uint8Array( memory.buffer, iovec.buf, iovec.buf_len );
 		buffer.set( data, pos );
+		pos += iovec.buf_len;
 	}
 
 	return buffer;
